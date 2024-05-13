@@ -1,31 +1,36 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Shared/Navbar';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { CartProvider } from './components/Customer/CartContext'; // Importa el CartProvider
+
+import Navbar from './components/Utilidades/Navbar';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
-import ProductList from './components/Shared/ProductList';
+import HomePage from './components/views/Principal/HomePage';
 import ShoppingCart from './components/Customer/ShoppingCart';
-import ProductCrud from './components/Admin/ProductCrud';
+import ProductCrud from './components/views/Admin/ProductCrud';
 import TopProductsChart from './components/Analytics/TopProductsChart';
-import HomePage from './components/Principal/HomePage';
-import { useAuth } from './components/Auth/AuthContext'; // Ajusta esta ruta según tu estructura de carpetas
+import ProductList from './components/Utilidades/ProductList';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserProfile from './components/UserProfile';
 
 function App() {
-  const { user } = useAuth();
-
   return (
     <Router>
-      <div>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={user ? <Navigate replace to="/" /> : <Login />} />
-          <Route path="/register" element={user ? <Navigate replace to="/" /> : <Register />} />
-          <Route path="/cart" element={user ? <ShoppingCart /> : <Navigate replace to="/login" />} />
-          <Route path="/admin/products" element={user && user.permiso === 'administrador' ? <ProductCrud /> : <Navigate replace to="/" />} />
-          <Route path="/analytics" element={user && user.permiso === 'administrador' ? <TopProductsChart /> : <Navigate replace to="/" />} />
-        </Routes>
-      </div>
+      <CartProvider> {/* Envuelve todos los componentes con el CartProvider */}
+        <div>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/productos" element={<ProductList />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/user" element={<UserProfile />} />
+            <Route path="/cart" element={<ProtectedRoute><ShoppingCart /></ProtectedRoute>} />
+            <Route path="/admin/products" element={<ProtectedRoute permission="administrador"><ProductCrud /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute permission="administrador"><TopProductsChart /></ProtectedRoute>} />
+          </Routes>
+        </div>
+      </CartProvider>
     </Router>
   );
 }

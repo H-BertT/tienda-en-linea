@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../../firebase/config';
+import { auth } from '../../firebase/config';
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -18,11 +20,15 @@ const RegisterForm = () => {
       [e.target.name]: e.target.value
     });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.nombre || !formData.apellido || !formData.correo || !formData.contraseña || !formData.confirmarContraseña) {
       setMessage('Todos los campos son obligatorios');
+      setIsError(true);
+      return;
+    }
+    if (formData.contraseña.length < 6) {
+      setMessage('La contraseña debe tener 6 caracteres o más');
       setIsError(true);
       return;
     }
@@ -31,40 +37,50 @@ const RegisterForm = () => {
       setIsError(true);
       return;
     }
-
-    const docRef = db.collection('usuarios').doc(formData.correo);
-
-    docRef.get().then(doc => {
-      if (doc.exists) {
-        setMessage('Este correo electrónico ya está registrado.');
-        setIsError(true);
-      } else {
-        docRef.set({
+  
+    // Registro en Firebase Authentication sin iniciar sesión automáticamente
+    auth.createUserWithEmailAndPassword(formData.correo, formData.contraseña)
+      .then((userCredential) => {
+        // Usuario registrado en Authentication, ahora registrarlo en Firestore
+        const user = userCredential.user;
+        db.collection('usuarios').doc(user.uid).set({
           nombre: formData.nombre,
           apellido: formData.apellido,
           correo: formData.correo,
-          contraseña: formData.contraseña,
-          permiso: 'cliente'  // Se añade el campo permiso con valor "cliente"
+          rol: 'cliente'
         }).then(() => {
-          setMessage('Usuario registrado exitosamente');
-          setIsError(false);
-          setFormData({
-            nombre: '',
-            apellido: '',
-            correo: '',
-            contraseña: '',
-            confirmarContraseña: ''
+          // Desloguear al usuario inmediatamente después del registro
+          auth.signOut().then(() => {
+            setMessage('Usuario registrado exitosamente. Por favor, inicie sesión.');
+            setIsError(false);
+            setFormData({
+              nombre: '',
+              apellido: '',
+              correo: '',
+              contraseña: '',
+              confirmarContraseña: ''
+            });
+          }).catch((error) => {
+            setMessage('Error al cerrar sesión después del registro: ' + error.message);
+            setIsError(true);
           });
         }).catch(error => {
-          setMessage('Error al registrar usuario: ' + error.message);
+          setMessage('Error al registrar usuario en Firestore: ' + error.message);
           setIsError(true);
         });
-      }
-    }).catch(error => {
-      setMessage('Error al verificar el correo electrónico: ' + error.message);
-      setIsError(true);
-    });
+      })
+      .catch((error) => {
+        if (error.code === 'auth/email-already-in-use') {
+          setMessage('Este correo electrónico ya está registrado');
+          setIsError(true);
+        } else {
+          setMessage('Error al registrar usuario en Authentication: ' + error.message);
+          setIsError(true);
+        }
+      });
   };
+  
+  
 
   return (
     <form onSubmit={handleSubmit} className="container mt-5">
