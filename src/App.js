@@ -12,6 +12,7 @@ import TopProductsChart from './components/Analytics/TopProductsChart';
 import ProductList from './components/Utilidades/ProductList';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './components/UserProfile';
+import HistorialCompra from './components/views/HistorialCompra';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/user" element={<UserProfile />} />
             <Route path="/cart" element={<ProtectedRoute><ShoppingCart /></ProtectedRoute>} />
+            <Route path="/historial" element={<ProtectedRoute><HistorialCompra /></ProtectedRoute>} />
             <Route path="/admin/products" element={<ProtectedRoute permission="administrador"><ProductCrud /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute permission="administrador"><TopProductsChart /></ProtectedRoute>} />
           </Routes>

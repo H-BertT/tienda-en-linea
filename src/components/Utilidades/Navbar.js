@@ -35,13 +35,13 @@ const Navbar = () => {
             <Button color="inherit" component={Link} to="/cart">
               Carrito
             </Button>
+            <Button color="inherit" component={Link} to="/historial">
+              Historial de compras
+            </Button>
             {user.rol === "administrador" && (
               <>
                 <Button color="inherit" component={Link} to="/admin/products">
                   Administrar Productos
-                </Button>
-                <Button color="inherit" component={Link} to="/analytics">
-                  Análisis
                 </Button>
               </>
             )}

@@ -68,6 +68,7 @@ const ShoppingCart = () => {
             console.error("Error completing purchase: ", error);
             alert("Ocurrió un error al completar la compra.");
         }
+        window.print();
     };
     
 
