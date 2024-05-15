@@ -21,24 +21,46 @@ function cartReducer(state, action) {
             ...state,
             items: updatedItems,
             totalItems: state.totalItems + 1
-        };       
-    case 'REMOVE_ITEM':
-      const itemToRemove = state.items[action.payload.id];
-      if (itemToRemove && itemToRemove.cantidad > 1) {
-        itemToRemove.cantidad -= 1;
-      }
-      return {
+        };   
+
+        
+        
+        
+        case 'REMOVE_ITEM':
+          const itemToRemove = state.items[action.payload.id];
+          let updatedRemoveItems = { ...state.items };
+          if (itemToRemove && itemToRemove.cantidad > 1) {
+            updatedRemoveItems[action.payload.id] = { ...itemToRemove, cantidad: itemToRemove.cantidad - 1 };
+            return {
+              ...state,
+              items: updatedRemoveItems,
+              totalItems: state.totalItems - 1
+            };
+          } else if (itemToRemove) {
+            delete updatedRemoveItems[action.payload.id];
+            return {
+              ...state,
+              items: updatedRemoveItems,
+              totalItems: state.totalItems - 1
+            };
+          }
+          return state;
+
+
+          case 'CLEAR_CART':
+    return {
         ...state,
-        items: { ...state.items },
-        totalItems: state.totalItems - 1
-      };
+        items: {}  // Asegúrate de que esto corresponda a cómo está estructurado tu estado inicial
+    };
+
+    
     case 'DELETE_ITEM':
-      const newItems = { ...state.items };
-      delete newItems[action.payload.id];
+      const { [action.payload.id]: removedItem, ...remainingItems } = state.items;
+      const itemCountRemoved = removedItem ? removedItem.cantidad : 0;
       return {
         ...state,
-        items: newItems,
-        totalItems: state.totalItems - (state.items[action.payload.id] ? state.items[action.payload.id].cantidad : 0)
+        items: remainingItems,
+        totalItems: state.totalItems - itemCountRemoved
       };
     default:
       return state;

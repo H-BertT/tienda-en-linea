@@ -15,11 +15,16 @@ export const AuthProvider = ({ children }) => {
                 const userRef = db.collection('usuarios').doc(userAuth.uid);
                 userRef.get().then(doc => {
                     if (doc.exists) {
-                        setUser({ uid: userAuth.uid, email: userAuth.email, ...doc.data() });
+                        const userData = { uid: userAuth.uid, email: userAuth.email, ...doc.data() };
+                        console.log("User data loaded:", userData); // Agrega registros de depuración para verificar la carga correcta de datos
+                        setUser(userData);
                     } else {
                         // Si no hay datos adicionales, establece solo la info de autenticación
                         setUser({ uid: userAuth.uid, email: userAuth.email });
                     }
+                }).catch(error => {
+                    console.error("Error fetching user details:", error);
+                    setUser({ uid: userAuth.uid, email: userAuth.email }); // Ajuste por si falla la carga de datos adicionales
                 });
             } else {
                 setUser(null);
@@ -30,15 +35,21 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            // Esto se maneja en el onAuthStateChanged, no es necesario aquí
+            await auth.signInWithEmailAndPassword(email, password);
+            // No es necesario manejar nada aquí, ya que onAuthStateChanged se ocupa de actualizar el estado
         } catch (error) {
-            throw error;
+            console.error("Login error:", error);
+            throw error; // Lanza el error para manejarlo más arriba si es necesario
         }
     };
 
     const logout = async () => {
-        await auth.signOut();
+        try {
+            await auth.signOut();
+        } catch (error) {
+            console.error("Logout error:", error);
+            throw error; // Lanza el error para manejarlo más arriba si es necesario
+        }
     };
 
     return (
