@@ -56,9 +56,15 @@ const ProductCrud = () => {
 
     const handleDelete = async (id) => {
         try {
+            // Eliminar el producto
             await db.collection('productos').doc(id).delete();
+            // Eliminar todas las ventas asociadas
+            const salesSnapshot = await db.collection('ventas').where('productoId', '==', id).get();
+            salesSnapshot.forEach(async (doc) => {
+                await db.collection('ventas').doc(doc.id).delete();
+            });
         } catch (error) {
-            console.error('Error eliminando producto: ', error);
+            console.error('Error eliminando producto y ventas asociadas: ', error);
         }
     };
 
@@ -73,10 +79,10 @@ const ProductCrud = () => {
         });
     };
 
-return (
-    <div className="container mt-5">
-        <h2>Agregar Producto</h2>
-        <form onSubmit={handleSubmit} className="mb-3">
+    return (
+        <div className="container mt-5">
+            <h2>Agregar/Actualizar Producto</h2>
+            <form onSubmit={handleSubmit} className="mb-3">
                 <div className="form-group">
                     <label>Nombre del producto:</label>
                     <input type="text" className="form-control" name="nombre" value={productForm.nombre} onChange={handleChange} />
@@ -95,17 +101,23 @@ return (
                 </div>
                 <div className="form-group">
                     <label>Talla:</label>
-                    <input type="text" className="form-control" name="talla" value={productForm.talla} onChange={handleChange} />
+                    <select className="form-control" name="talla" value={productForm.talla} onChange={handleChange}>
+                        <option value="Extra chica">Extra chica</option>
+                        <option value="Chica">Chica</option>
+                        <option value="Mediana">Mediana</option>
+                        <option value="Grande">Grande</option>
+                        <option value="Extra Grande">Extra Grande</option>
+                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary">Agregar/Actualizar Producto</button>
             </form>
-        <div>
-        <h3>Lista de Productos</h3>
+    
+            <h3>Lista de Productos</h3>
             {productos.map(producto => (
                 <div key={producto.id} className="card mb-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
                     <div className="contenedorHorizontal" style={{ display: 'flex', flexDirection: 'row', width: '100%', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
                         <div style={{ padding: '12px', width: '30%', height: '300px', overflow: 'hidden' }}>
-                        <img src={producto.imageUrl || 'path/to/default/image'} alt="Producto" style={{ borderRadius: '12px', width: '100%', height: '100%', objectFit: 'fill' }} />
+                        <img src={producto.imageUrl || 'path/to/default/image'} alt={producto.nombre} style={{ borderRadius: '12px', width: '100%', height: '100%', objectFit: 'fill' }} />
                         </div>
                         <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
@@ -117,24 +129,23 @@ return (
                             </div>
                         </div>
                     </div>
-                        <div style={{margin: '12px 0px 12px' ,display: 'flex', justifyContent: 'space-around', width: '100%' }}>
-                            <button onClick={() => {
-                                setIsEditing(true);
-                                setEditId(producto.id);
-                                setProductForm({ ...producto });}} className="btn btn-info">Modificar</button>
-                            <button onClick={() => handleDelete(producto.id)} className="btn btn-danger">Eliminar</button>
-            
-                            <label className="btn btn-secondary">
-                                Subir Imagen<input type="file" hidden onChange={(e) => handleImageUpload(e, producto.id)} />
-                            </label>
-                        </div>
+                    <div style={{margin: '12px 0px 12px', display: 'flex', justifyContent: 'space-around', width: '100%'}}>
+                        <button onClick={() => {
+                            setIsEditing(true);
+                            setEditId(producto.id);
+                            setProductForm({ ...producto });
+                        }} className="btn btn-info">Modificar</button>
+                        <button onClick={() => handleDelete(producto.id)} className="btn btn-danger">Eliminar</button>
+    
+                        <label className="btn btn-secondary">
+                            Subir Imagen<input type="file" hidden onChange={(e) => handleImageUpload(e, producto.id)} />
+                        </label>
+                    </div>
                 </div>
-        
             ))}
-    </div>
-</div>
-);
-
+        </div>
+    );
+    
 };
 
 export default ProductCrud;

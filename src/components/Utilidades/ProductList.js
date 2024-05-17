@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase/config';
 import { useCart } from '../Customer/CartContext'; // Verifica la ruta de importación
+import { useAuth } from '../Auth/AuthContext'; // Ajusta esta ruta según sea necesario
 
 const ProductList = () => {
     const [productos, setProductos] = useState([]);
     const { state: cartState, dispatch } = useCart();
+    const { user } = useAuth(); 
 
     useEffect(() => {
         const unsubscribe = db.collection('productos').onSnapshot(snapshot => {
@@ -63,9 +65,11 @@ const ProductList = () => {
                             <p>Cantidad disponible: {producto.cantidad}</p>
                             <p>Precio: ${producto.precio}</p>
                             <p>Talla: {producto.talla}</p>
+                            {user && (
                             <button onClick={() => handleAddToCart(producto)} disabled={producto.cantidad === 0} style={{ marginTop: '10px', width: '100%', padding: '10px', backgroundColor: producto.cantidad === 0 ? '#cccccc' : 'blue', color: 'white', border: 'none', borderRadius: '5px', cursor: producto.cantidad === 0 ? 'not-allowed' : 'pointer' }}>
-                                Agregar al carrito
+                            Agregar al carrito
                             </button>
+                            )}
                         </div>
                     ))
                 ) : (

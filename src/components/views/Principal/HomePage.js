@@ -21,7 +21,7 @@ function HomePage() {
     infinite: true,
     speed: 500,
     slidesToShow: 5,
-    slidesToScroll: 3,
+    slidesToScroll: 2,
     autoplay: true,
     autoplaySpeed: 2000,
     cssEase: "linear"
@@ -36,27 +36,32 @@ function HomePage() {
       }));
       setProductos(productosCargados);
     };
-
-    const fetchTopProductos = async () => {
-      const ventasSnapshot = await db.collection('ventas')
-                                     .orderBy('cantidad', 'desc')
-                                     .limit(3)
-                                     .get();
-      const topProd = ventasSnapshot.docs.map(doc => {
-        const data = doc.data();
-        const producto = productos.find(p => p.id === data.productoId);
-        return {
-          nombre: producto ? producto.nombre : 'Cargando producto...',
-          cantidad: data.cantidad
-        };
-      });
-      setTopProductos(topProd);
-    };
-
+  
     cargarProductos().then(() => {
-      fetchTopProductos();
+      if (productos.length > 0) {
+        fetchTopProductos(); // Llama a fetchTopProductos solo si hay productos cargados
+      }
     });
-  }, []);
+  }, [productos.length]); // Agrega productos.length como dependencia
+  
+  const fetchTopProductos = async () => {
+    if (productos.length === 0) return; // Verifica si hay productos cargados
+  
+    const ventasSnapshot = await db.collection('ventas')
+                                   .orderBy('cantidad', 'desc')
+                                   .limit(3)
+                                   .get();
+    const topProd = ventasSnapshot.docs.map(doc => {
+      const data = doc.data();
+      const producto = productos.find(p => p.id === data.productoId);
+      return {
+        nombre: producto ? producto.nombre : 'Cargando producto...',
+        cantidad: data.cantidad
+      };
+    });
+    setTopProductos(topProd);
+  };
+  
 
   const data = {
     labels: topProductos.map(p => p.nombre),
@@ -107,6 +112,8 @@ function HomePage() {
           </Link>
         )}
       </div>
+      <br></br>
+      <br></br>
       <div style={{ width: '400px', height: '400px', margin: '0 auto' }}>
         <h3>Top 3 Productos Más Vendidos</h3>
         <Pie data={data} options={options} />
@@ -119,7 +126,7 @@ function HomePage() {
           <Slider {...settings}>
           {productos.map(producto => (
             <div key={producto.id} style={{padding: '10px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-              <img src={producto.imageUrl || 'path/to/default/image'} alt={producto.nombre} style={{ width: '50%', height: '250px', borderRadius: '12px' }} />
+              <img src={producto.imageUrl || 'path/to/default/image'} alt={producto.nombre} style={{ width: '95%', height: '250px', borderRadius: '12px' }} />
               <h3 style={{ marginTop: '10px' }}>{producto.nombre}</h3>
               <p style={{ fontSize: '14px' }}>{producto.descripcion}</p>
             </div>
