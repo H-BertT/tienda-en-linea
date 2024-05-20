@@ -43,8 +43,8 @@ const ShoppingCart = () => {
                     continue;
                 }
     
-                const newQuantity = data.cantidad - item.cantidad; // Calcula la nueva cantidad restante
-                batch.update(productRef, { cantidad: newQuantity }); // Actualiza directamente con la nueva cantidad
+                const newQuantity = data.cantidad - item.cantidad;
+                batch.update(productRef, { cantidad: newQuantity }); 
     
                 const saleRef = db.collection('ventas').doc();
                 batch.set(saleRef, {
@@ -52,7 +52,11 @@ const ShoppingCart = () => {
                     productoId: item.id,
                     cantidad: item.cantidad,
                     precioTotal: item.precio * item.cantidad,
-                    fecha: new Date()
+                    fecha: new Date(),
+
+
+                    
+                    puntos: item.cantidad * 5 
                 });
             } catch (error) {
                 console.error("Error al acceder al producto:", item.id, error);
@@ -62,7 +66,7 @@ const ShoppingCart = () => {
     
         try {
             await batch.commit();
-            dispatch({ type: 'CLEAR_CART' }); // Limpia el carrito tras la compra
+            dispatch({ type: 'CLEAR_CART' }); 
             alert("Compra realizada con éxito!");
         } catch (error) {
             console.error("Error completing purchase: ", error);
@@ -70,6 +74,8 @@ const ShoppingCart = () => {
         }
         window.print();
     };
+    
+    
     
 
     const totalPrice = Object.values(items).reduce((total, item) => total + item.precio * item.cantidad, 0);
@@ -125,5 +131,4 @@ const ShoppingCart = () => {
         </div>
     );
 };
-
 export default ShoppingCart;

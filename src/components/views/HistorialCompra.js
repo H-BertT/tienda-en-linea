@@ -3,6 +3,7 @@ import { db, auth } from '../../firebase/config';
 
 const PurchaseHistory = () => {
     const [purchases, setPurchases] = useState([]);
+    const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -27,11 +28,20 @@ const PurchaseHistory = () => {
                         id: doc.id,
                         ...doc.data(),
                         fecha: doc.data().fecha.toDate ? new Date(doc.data().fecha.toDate()).toLocaleDateString() : new Date(doc.data().fecha).toLocaleDateString(),
-                        imageUrl: productData.data().imageUrl, // Asumiendo que la imagen está almacenada en el campo 'imageUrl'
-                        nombreProducto: productData.data().nombre // Asumiendo que el nombre está almacenado en el campo 'nombre'
+                        imageUrl: productData.data().imageUrl,
+                        nombreProducto: productData.data().nombre,
+                        puntos: doc.data().puntos
                     };
                 }));
+
                 setPurchases(purchasesData);
+
+                
+
+                const total = purchasesData.reduce((sum, purchase) => sum + purchase.puntos, 0);
+                setTotalPoints(total);
+            
+            
             } catch (error) {
                 console.error("Error al obtener las compras del usuario:", error);
                 setError(`Error al cargar las compras: ${error.message || 'Desconocido'}`);
@@ -60,21 +70,25 @@ const PurchaseHistory = () => {
                 <ul className="list-group">
                     {purchases.map((purchase) => (
                         <li key={purchase.id} className="list-group-item">
-                                <h5>{purchase.nombreProducto}</h5>
-                                <div class="contenedorPrimario" style={{display:'flex', justifyContent:'space-between'}}>
-                                    <div class="contenedorI">
-                                        <img src={purchase.imageUrl} alt={purchase.nombreProducto} style={{ width: "100px" }} />
-                                    </div>
-                                    <div class="contenedorD">
-                                        <p>Cantidad: {purchase.cantidad}</p>
-                                        <p>Total pagado: ${purchase.precioTotal}</p>
-                                        <p>Fecha de compra: {purchase.fecha}</p>
-                                    </div>
+                            <div className="row align-items-center">
+                                <div className="col-4">
+                                    <img src={purchase.imageUrl} alt={purchase.nombreProducto} style={{ width: "100px" }} />
                                 </div>
+                                <div className="col-8">
+                                    <h5>{purchase.nombreProducto}</h5>
+                                    <p>Cantidad: {purchase.cantidad}</p>
+                                    <p>Total pagado: ${purchase.precioTotal}</p>
+                                    <p>Fecha de compra: {purchase.fecha}</p>
+                                    <p>Puntos ganados: {purchase.puntos}</p>
+                                </div>
+                            </div>
                         </li>
                     ))}
                 </ul>
             ) : <p>No se encontraron compras.</p>}
+            <div className="mt-4">
+                <h4>Puntos Totales Acumulados: {totalPoints}</h4>
+            </div>
         </div>
     );
 };
