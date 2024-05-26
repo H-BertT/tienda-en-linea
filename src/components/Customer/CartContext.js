@@ -50,7 +50,7 @@ function cartReducer(state, action) {
           case 'CLEAR_CART':
     return {
         ...state,
-        items: {}  // Asegúrate de que esto corresponda a cómo está estructurado tu estado inicial
+        items: {}  
     };
 
     

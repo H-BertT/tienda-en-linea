@@ -15,7 +15,7 @@ const PurchaseHistory = () => {
                 setLoading(false);
                 return;
             }
-
+            
             setLoading(true);
             try {
                 const snapshot = await db.collection('ventas')
